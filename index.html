@@ -571,13 +571,8 @@ document.getElementById('authBtn').addEventListener('click', async function() {
   this.disabled = true;
   try {
     if (isSignUp) {
-      const r = await signUp(email, password);
-      if (r.access_token) {
-        await initUser(authUser);
-      } else {
-        msg.className = 'success';
-        msg.textContent = 'compte créé ! vérifie tes emails';
-      }
+      await signUp(email, password);
+      await initUser(authUser);
     } else {
       await signIn(email, password);
       await initUser(authUser);
