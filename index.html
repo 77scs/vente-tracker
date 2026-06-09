@@ -165,7 +165,7 @@ let sales = [];
 let theme = 'dark';
 let history = [];
 let authUser = null;
-let isSignUp = false;
+let isSignUp = true;
 let supabaseReady = true;
 
 function sb(method, path, body) {
@@ -272,6 +272,10 @@ function showAuth() {
   document.getElementById('mainView').style.display = 'none';
   document.getElementById('historyView').style.display = 'none';
   document.getElementById('authView').style.display = '';
+  document.getElementById('authTitle').textContent = 'inscription';
+  document.getElementById('authBtn').textContent = "s'inscrire";
+  document.getElementById('authToggle').textContent = 'déjà un compte ? se connecter';
+  document.getElementById('authMsg').textContent = '';
 }
 
 function showMain() {
