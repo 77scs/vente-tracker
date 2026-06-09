@@ -165,20 +165,6 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 }
 .actions .btn { flex: 1; }
 
-.history-box {
-  margin-top: 28px;
-  border-top: 1px solid var(--border2);
-  padding-top: 16px;
-}
-.history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: var(--muted2);
-  font-weight: 500;
-}
 .history-item {
   display: flex;
   justify-content: space-between;
@@ -282,16 +268,18 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 <div class="actions">
   <button class="btn" id="pdfBtn">imprimer</button>
   <button class="btn-outline" id="shareBtn">partager</button>
+  <button class="btn-outline" id="historyBtn">historique</button>
 </div>
 
-<div class="history-box">
-  <div class="history-header">
-    <span>historique</span>
+</div>
+
+<div id="historyView" style="display:none;">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <button class="btn" id="backBtn" style="padding:6px 14px;font-size:13px;">← retour</button>
+    <span style="font-size:14px;font-weight:600;">historique</span>
     <button class="btn-outline" id="saveBtn" style="font-size:12px;padding:4px 10px;">sauvegarder</button>
   </div>
   <div id="historyList"></div>
-</div>
-
 </div>
 
 <script>
@@ -363,6 +351,7 @@ function renderHistory() {
       sales = JSON.parse(JSON.stringify(history[idx].sales));
       save();
       render();
+      showMain();
     });
   });
 
@@ -556,6 +545,20 @@ document.getElementById('shareBtn').addEventListener('click', function() {
   }
 });
 
+function showHistory() {
+  document.querySelector('.container').style.display = 'none';
+  document.getElementById('historyView').style.display = '';
+  renderHistory();
+}
+
+function showMain() {
+  document.querySelector('.container').style.display = '';
+  document.getElementById('historyView').style.display = 'none';
+}
+
+document.getElementById('historyBtn').addEventListener('click', showHistory);
+document.getElementById('backBtn').addEventListener('click', showMain);
+
 document.getElementById('saveBtn').addEventListener('click', function() {
   if (sales.length === 0) return;
   const now = new Date();
@@ -573,7 +576,6 @@ document.getElementById('saveBtn').addEventListener('click', function() {
 load();
 applyTheme();
 render();
-renderHistory();
 </script>
 </body>
 </html>
