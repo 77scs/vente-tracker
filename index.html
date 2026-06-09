@@ -99,8 +99,10 @@ body {
   font-size: 12px;
   flex-shrink: 0;
   margin-left: 8px;
+  transition: color .15s;
 }
-.user-bar .link:hover { color: #f87171; }
+.user-bar .link:hover { color: var(--fg); }
+.user-bar .link-logout:hover { color: #f87171; }
 
 .form { margin-bottom: 32px; }
 .row {
@@ -297,9 +299,10 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   </div>
 </div>
 
-<div id="userBar" style="display:none;" class="user-bar">
+<div id="userBar" class="user-bar">
   <span class="email" id="userEmail"></span>
-  <span class="link" id="logoutBtn">déconnexion</span>
+  <span class="link" id="loginBtn">se connecter</span>
+  <span class="link link-logout" id="logoutBtn" style="display:none;">déconnexion</span>
 </div>
 
 <div class="form">
@@ -770,6 +773,12 @@ document.getElementById('authBtn').addEventListener('click', async function() {
   }
 });
 
+document.getElementById('loginBtn').addEventListener('click', function() {
+  document.getElementById('mainView').style.display = 'none';
+  document.getElementById('historyView').style.display = 'none';
+  document.getElementById('authView').style.display = '';
+});
+
 document.getElementById('logoutBtn').addEventListener('click', async function() {
   await supabase.auth.signOut();
 });
@@ -778,24 +787,25 @@ async function initUser(user) {
   currentUser = user;
   if (user) {
     document.getElementById('userEmail').textContent = user.email;
-    document.getElementById('userBar').style.display = '';
+    document.getElementById('userEmail').style.display = '';
+    document.getElementById('loginBtn').style.display = 'none';
+    document.getElementById('logoutBtn').style.display = '';
     await loadCloudData();
     showMain();
   } else {
-    document.getElementById('userBar').style.display = 'none';
+    document.getElementById('userEmail').style.display = 'none';
+    document.getElementById('loginBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = 'none';
     currentUser = null;
     loadLocal();
-    if (sales.length > 0 || history.length > 0) {
-      showMain();
-    } else {
-      showAuth();
-    }
+    showMain();
   }
   applyTheme();
   render();
 }
 
 async function init() {
+  showMain();
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
