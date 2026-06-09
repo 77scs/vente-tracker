@@ -167,6 +167,7 @@ function render() {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">aucune vente</td></tr>';
     totalSpan.textContent = '0,00 €';
     document.getElementById('roi').style.display = 'none';
+    document.getElementById('chartContainer').style.display = 'none';
     return;
   }
   let total = 0, totalCost = 0, html = '';
