@@ -199,6 +199,7 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   transition: color .15s;
 }
 .history-del:hover { color: #f87171; }
+.history-restore:hover { color: #4ade80 !important; }
 .clear-all {
   text-align: center;
   margin-top: 12px;
@@ -270,7 +271,6 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 <div class="actions">
   <button class="btn" id="pdfBtn">imprimer</button>
   <button class="btn-outline" id="shareBtn">partager</button>
-  <button class="btn-outline" id="deplacerBtn">déplacer</button>
   <button class="btn-outline" id="historyBtn">historique</button>
 </div>
 
@@ -342,6 +342,7 @@ function renderHistory() {
       <div class="history-item-info">
         <span>${h.sales.length} art.</span>
         <span style="color:${total >= 0 ? 'var(--profit,#4ade80)' : 'var(--loss,#f87171)'}">${sign}${total.toFixed(2).replace('.', ',')} €</span>
+        <span class="history-restore" data-i="${i}" style="color:var(--muted);cursor:pointer;font-size:12px;transition:color .15s;">déplacer</span>
         <span class="history-del" data-i="${i}">✕</span>
       </div>
     </div>`;
@@ -350,7 +351,7 @@ function renderHistory() {
 
   el.querySelectorAll('.history-item').forEach(el2 => {
     el2.addEventListener('click', function(e) {
-      if (e.target.classList.contains('history-del')) return;
+      if (e.target.classList.contains('history-del') || e.target.classList.contains('history-restore')) return;
       const idx = parseInt(this.dataset.i);
       sales = JSON.parse(JSON.stringify(history[idx].sales));
       save();
@@ -365,6 +366,19 @@ function renderHistory() {
       history.splice(parseInt(this.dataset.i), 1);
       saveHistory();
       renderHistory();
+    });
+  });
+
+  el.querySelectorAll('.history-restore').forEach(el2 => {
+    el2.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const idx = parseInt(this.dataset.i);
+      sales = sales.concat(JSON.parse(JSON.stringify(history[idx].sales)));
+      history.splice(idx, 1);
+      save();
+      saveHistory();
+      render();
+      showMain();
     });
   });
 
@@ -607,18 +621,6 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   const orig = btn.textContent;
   btn.textContent = '✓';
   setTimeout(() => btn.textContent = orig, 1000);
-});
-
-document.getElementById('deplacerBtn').addEventListener('click', function() {
-  if (sales.length === 0) return;
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  const name = `déplacé ${pad(now.getDate())}/${pad(now.getMonth()+1)} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  history.push({ id: Date.now(), name, sales: JSON.parse(JSON.stringify(sales)) });
-  saveHistory();
-  sales = [];
-  save();
-  render();
 });
 
 load();
