@@ -119,8 +119,16 @@ td {
   border-bottom: 1px solid var(--border);
   transition: background .15s;
 }
+tbody tr {
+  cursor: pointer;
+}
 tbody tr:hover td {
   background: var(--card);
+}
+tbody tr.active td {
+  background: var(--card);
+  outline: 1px solid var(--muted);
+  outline-offset: -1px;
 }
 td:nth-child(2), th:nth-child(2) { text-align: right; }
 td:nth-child(3), th:nth-child(3) { text-align: right; }
@@ -217,6 +225,7 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   .row { flex-wrap: wrap; gap: 8px; }
   .row input { flex: 1 1 100%; padding: 14px 12px; font-size: 16px; }
   .row .btn { flex: 1 1 100%; padding: 14px; font-size: 16px; }
+  .row .btn-outline { flex: 1 1 100%; padding: 14px; font-size: 16px; }
   .btn-outline { padding: 8px 10px; font-size: 12px; }
   .container { max-width: 100%; }
   td, th { padding: 10px 4px; font-size: 12px; }
@@ -244,6 +253,7 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
     <input type="number" id="achat" placeholder="achat €" step="0.01">
     <input type="number" id="vente" placeholder="vente €" step="0.01">
     <button class="btn" id="ajouter">+</button>
+    <button class="btn-outline" id="cancelBtn" style="display:none;padding:10px 12px;font-size:13px;">annuler</button>
   </div>
 </div>
 
@@ -264,6 +274,8 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   <span>bénéfice total</span>
   <span id="totalSpan">0,00 €</span>
 </div>
+
+<div id="stats" style="font-size:12px;color:var(--muted);padding:8px 8px 0;display:none;"></div>
 
 <div class="actions">
   <button class="btn" id="pdfBtn">imprimer</button>
@@ -289,6 +301,7 @@ const HISTORY_KEY = 'vt_history';
 let sales = [];
 let theme = 'dark';
 let history = [];
+let editing = -1;
 
 function load() {
   try {
@@ -383,6 +396,7 @@ function render() {
   if (sales.length === 0) {
     tbody.innerHTML = '<tr><td colspan="5" class="empty">aucune vente</td></tr>';
     totalSpan.textContent = '0,00 €';
+    document.getElementById('stats').style.display = 'none';
     return;
   }
 
@@ -399,7 +413,7 @@ function render() {
     const sign = p >= 0 ? '+' : '';
     const mult = s.achat > 0 ? (s.vente / s.achat) : 0;
     const multStr = mult % 1 === 0 ? mult.toFixed(0) : mult.toFixed(1);
-    html += `<tr>
+    html += `<tr class="editable" data-i="${i}">
       <td>${esc(s.article)}</td>
       <td>${fmt(s.achat)}</td>
       <td>${fmt(s.vente)}</td>
@@ -412,12 +426,45 @@ function render() {
   totalSpan.textContent = (total >= 0 ? '+' : '') + total.toFixed(2).replace('.', ',') + ' €';
   
   document.querySelectorAll('.del').forEach(el => {
-    el.addEventListener('click', function() {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
       sales.splice(parseInt(this.dataset.i), 1);
       save();
       render();
     });
   });
+
+  document.querySelectorAll('.editable').forEach(el => {
+    el.addEventListener('click', function() {
+      const idx = parseInt(this.dataset.i);
+      const s = sales[idx];
+      document.getElementById('article').value = s.article;
+      document.getElementById('achat').value = s.achat;
+      document.getElementById('vente').value = s.vente;
+      document.getElementById('article').focus();
+      editing = idx;
+      document.getElementById('ajouter').textContent = 'modifier';
+      document.getElementById('cancelBtn').style.display = '';
+      document.querySelectorAll('.editable').forEach(r => r.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  const statsEl = document.getElementById('stats');
+  if (sales.length > 0) {
+    let best = { idx: 0, profit: -Infinity };
+    for (let i = 0; i < sales.length; i++) {
+      const p = sales[i].vente - sales[i].achat;
+      if (p > best.profit) { best = { idx: i, profit: p }; }
+    }
+    const bestS = sales[best.idx];
+    const avgMult = sales.reduce((s, x) => s + (x.achat > 0 ? x.vente / x.achat : 0), 0) / sales.length;
+    const avgStr = avgMult % 1 === 0 ? avgMult.toFixed(0) : avgMult.toFixed(1);
+    statsEl.textContent = `${sales.length} vente${sales.length > 1 ? 's' : ''} · total achat ${totalCost.toFixed(2).replace('.', ',')} € · meilleur : ${esc(bestS.article)} (${best.profit >= 0 ? '+' : ''}${best.profit.toFixed(2).replace('.', ',')} €) · marge moy. ×${avgStr}`;
+    statsEl.style.display = '';
+  } else {
+    statsEl.style.display = 'none';
+  }
 }
 
 function esc(s) {
@@ -431,6 +478,16 @@ function fmt(n) {
 }
 
 
+function clearForm() {
+  document.getElementById('article').value = '';
+  document.getElementById('achat').value = '';
+  document.getElementById('vente').value = '';
+  document.getElementById('ajouter').textContent = '+';
+  document.getElementById('cancelBtn').style.display = 'none';
+  document.querySelectorAll('.editable').forEach(r => r.classList.remove('active'));
+  editing = -1;
+}
+
 document.getElementById('ajouter').addEventListener('click', function() {
   const article = document.getElementById('article').value.trim();
   const achat = parseFloat(document.getElementById('achat').value);
@@ -438,14 +495,22 @@ document.getElementById('ajouter').addEventListener('click', function() {
   
   if (!article || isNaN(achat) || isNaN(vente)) return;
   
-  sales.push({ article, achat, vente });
+  if (editing >= 0 && editing < sales.length) {
+    sales[editing] = { article, achat, vente };
+  } else {
+    sales.push({ article, achat, vente });
+  }
   save();
   render();
-  
-  document.getElementById('article').value = '';
-  document.getElementById('achat').value = '';
-  document.getElementById('vente').value = '';
+  clearForm();
   document.getElementById('article').focus();
+});
+
+document.getElementById('cancelBtn').addEventListener('click', clearForm);
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') clearForm();
+  if (e.key === 'Enter') document.getElementById('ajouter').click();
 });
 
 document.addEventListener('keydown', function(e) {
