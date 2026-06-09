@@ -154,6 +154,7 @@ td:nth-child(5),th:nth-child(5){text-align:right}
 <script>
 const SUPABASE_URL = 'https://mbimktqlsqhxmzbbbhkc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_PpJOgXn3RoX6ZZJJbeyimg_E9QVpZg9';
+const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1iaW1rdHFsc3FoeG16YmJiaGtjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTAyMTYwMSwiZXhwIjoyMDk2NTk3NjAxfQ.5tC8-0Y1Fhswu-GeX3g5vhRE8bmfD8QD_7Z3QsfOlEI';
 
 const STORAGE_KEY = 'vt_sales';
 const THEME_KEY = 'vt_theme';
@@ -177,17 +178,15 @@ function sb(method, path, body) {
 }
 
 async function signUp(email, pw) {
-  const r = await fetch(SUPABASE_URL + '/auth/v1/signup', {
+  const r = await fetch(SUPABASE_URL + '/auth/v1/admin/users', {
     method: 'POST',
-    headers: { apikey: SUPABASE_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password: pw })
+    headers: { apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password: pw, email_confirm: true })
   });
   const j = await r.json();
   if (!r.ok) throw j;
-  if (j.access_token) {
-    localStorage.setItem(AUTH_KEY, j.access_token);
-    authUser = j.user;
-  }
+  localStorage.setItem(AUTH_KEY, j.access_token);
+  authUser = j;
   return j;
 }
 
