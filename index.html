@@ -69,10 +69,12 @@ td:nth-child(5),th:nth-child(5){text-align:right}
 
 <div id="app">
 <div class="container" id="mainView">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+  <div style="text-align:center;margin-bottom:20px">
     <div style="font-size:28px;font-weight:700;letter-spacing:2px">analyser les ventes</div>
-    <button class="btn-outline" id="themeToggle" style="font-size:12px;padding:4px 10px">blanc</button>
+    <button class="btn-outline" id="themeToggle" style="font-size:12px;padding:4px 10px;margin-top:8px">blanc</button>
   </div>
+
+  <div style="margin-bottom:24px"></div>
 
   <div class="form">
     <div class="row">
@@ -216,7 +218,7 @@ function render() {
 
 function updateChart() {
   const container = document.getElementById('chartContainer');
-  if (sales.length < 2) {
+  if (sales.length < 1) {
     container.style.display = 'none';
     return;
   }
