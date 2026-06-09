@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PRINT MONEY</title>
+<title>analyser les ventes</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
@@ -231,10 +231,8 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 <div class="container">
 
 <div style="text-align:center;margin-bottom:24px;">
-  <div style="font-size:36px;font-weight:700;letter-spacing:3px;margin-bottom:4px;transition:color .2s;">PRINT MONEY</div>
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <span></span>
-    <h1 style="margin:0;font-size:14px;font-weight:400;color:var(--muted2);text-align:center;flex:1;transition:color .2s;">analyser les ventes</h1>
+  <div style="font-size:36px;font-weight:700;letter-spacing:3px;margin-bottom:4px;transition:color .2s;">analyser les ventes</div>
+  <div style="display:flex;justify-content:flex-end;align-items:center;">
     <button class="btn-outline" id="themeToggle" style="font-size:13px;padding:6px 12px;">blanc</button>
   </div>
 </div>
@@ -510,11 +508,7 @@ document.getElementById('pdfBtn').addEventListener('click', function() {
 
   doc.setTextColor(isLight ? 0 : 255, isLight ? 0 : 255, isLight ? 0 : 255);
   doc.setFontSize(20);
-  doc.text('PRINT MONEY', 105, 18, { align: 'center' });
-
-  doc.setFontSize(10);
-  doc.setTextColor(isLight ? 100 : 180, isLight ? 100 : 180, isLight ? 100 : 180);
-  doc.text('analyser les ventes', 105, 25, { align: 'center' });
+  doc.text('analyser les ventes', 105, 18, { align: 'center' });
 
   let total = 0;
   let totalCost = 0;
@@ -572,9 +566,9 @@ document.getElementById('shareBtn').addEventListener('click', function() {
     const multStr = mult % 1 === 0 ? mult.toFixed(0) : mult.toFixed(1);
     return `${s.article} | ${s.achat.toFixed(2)}€ → ${s.vente.toFixed(2)}€ | ${p >= 0 ? '+' : ''}${p.toFixed(2)}€ | ×${multStr}`;
   }).join('\n');
-  const msg = `PRINT MONEY\n\n${lines}\n\nbénéfice total : ${total >= 0 ? '+' : ''}${total.toFixed(2)}€`;
+  const msg = `analyser les ventes\n\n${lines}\n\nbénéfice total : ${total >= 0 ? '+' : ''}${total.toFixed(2)}€`;
   if (navigator.share) {
-    navigator.share({ title: 'PRINT MONEY', text: msg });
+    navigator.share({ title: 'analyser les ventes', text: msg });
   } else {
     navigator.clipboard.writeText(msg).then(() => {
       const btn = document.getElementById('shareBtn');
