@@ -185,8 +185,7 @@ async function signUp(email, pw) {
   });
   const j = await r.json();
   if (!r.ok) throw j;
-  localStorage.setItem(AUTH_KEY, j.access_token);
-  authUser = j;
+  await signIn(email, pw);
   return j;
 }
 
