@@ -1,0 +1,16 @@
+name: Deploy to Netlify
+on:
+  push:
+    branches: [master]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: zip -r deploy.zip index.html netlify.toml
+      - run: |
+          curl -s -X POST \
+            -H "Authorization: Bearer ${{ secrets.NETLIFY_TOKEN }}" \
+            --data-binary "@deploy.zip" \
+            "https://api.netlify.com/api/v1/sites/${{ secrets.NETLIFY_SITE_ID }}/deploys" \
+            -H "Content-Type: application/zip"
