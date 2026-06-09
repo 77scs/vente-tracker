@@ -6,6 +6,7 @@
 <title>analyser les ventes</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#000;--fg:#fff;--card:#111;--border:#222;--border2:#333;--muted:#555;--muted2:#888;--btn-bg:#fff;--btn-fg:#000}
@@ -101,6 +102,11 @@ td:nth-child(5),th:nth-child(5){text-align:right}
   </div>
   <div id="roi" style="font-size:12px;color:var(--muted);padding:4px 8px 0;text-align:right;display:none"></div>
 
+  <div id="chartContainer" style="margin-top:24px;display:none">
+    <div style="font-size:12px;color:var(--muted2);margin-bottom:8px;text-align:center">volume des ventes</div>
+    <canvas id="chart"></canvas>
+  </div>
+
   <div class="actions">
     <button class="btn" id="pdfBtn">imprimer</button>
     <button class="btn-outline" id="shareBtn">partager</button>
@@ -126,6 +132,7 @@ const HISTORY_KEY = 'vt_history';
 let sales = [];
 let theme = 'dark';
 let history = [];
+let chart = null;
 
 function loadLocal() {
   try { const d = localStorage.getItem(STORAGE_KEY); if (d) sales = JSON.parse(d); } catch(e) {}
@@ -204,6 +211,58 @@ function render() {
   } else {
     roiEl.style.display = 'none';
   }
+  updateChart();
+}
+
+function updateChart() {
+  const container = document.getElementById('chartContainer');
+  if (sales.length < 2) {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = '';
+  const ctx = document.getElementById('chart').getContext('2d');
+  const isLight = theme === 'light';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+  const textColor = isLight ? '#666' : '#888';
+
+  const labels = sales.map((s, i) => (i + 1).toString());
+  const profits = sales.map(s => +(s.vente - s.achat).toFixed(2));
+
+  if (chart) { chart.destroy(); }
+
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'bénéfice',
+        data: profits,
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#4ade80'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { color: gridColor }
+        },
+        y: {
+          ticks: { color: textColor, font: { size: 10 } },
+          grid: { color: gridColor }
+        }
+      }
+    }
+  });
 }
 
 function renderHistory() {
