@@ -155,7 +155,6 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   color: #f87171;
   transform: scale(1.2);
 }
-.clone:hover { color: var(--fg) !important; }
 .del:active {
   transform: scale(.9);
 }
@@ -423,7 +422,7 @@ function render() {
       <td>${fmt(s.achat)}</td>
       <td>${fmt(s.vente)}</td>
       <td class="${cls}">${sign}${p.toFixed(2).replace('.', ',')} €</td>
-      <td><span style="font-size:18px;line-height:1">×</span>${multStr}<span class="clone" data-i="${i}" style="color:var(--muted);cursor:pointer;margin-left:6px;font-size:13px;transition:color .15s;">⤵</span><span class="del" data-i="${i}">✕</span></td>
+      <td><span style="font-size:18px;line-height:1">×</span>${multStr}<span class="del" data-i="${i}">✕</span></td>
     </tr>`;
   }
 
@@ -440,15 +439,6 @@ function render() {
       history.push({ id: Date.now(), name, sales: [item] });
       saveHistory();
       sales.splice(idx, 1);
-      save();
-      render();
-    });
-  });
-  
-  document.querySelectorAll('.clone').forEach(el => {
-    el.addEventListener('click', function() {
-      const idx = parseInt(this.dataset.i);
-      sales.splice(idx, 0, { ...sales[idx] });
       save();
       render();
     });
