@@ -350,12 +350,15 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 
 <div id="authView" style="width:100%;max-width:400px;">
   <div class="auth">
-    <h2 id="authTitle">connexion</h2>
+    <div style="text-align:right;margin-bottom:12px;">
+      <button class="btn-outline" id="authThemeToggle" style="font-size:12px;padding:4px 10px;">blanc</button>
+    </div>
+    <h2 id="authTitle" style="margin-bottom:24px;">connexion</h2>
     <div id="authError" class="error" style="display:none;"></div>
     <input type="email" id="authEmail" placeholder="email" autocomplete="email">
-    <input type="password" id="authPassword" placeholder="mot de passe" autocomplete="current-password">
-    <button class="btn" id="authBtn">se connecter</button>
-    <div style="margin-top:12px;">
+    <input type="password" id="authPassword" placeholder="mot de passe">
+    <button class="btn" id="authBtn" style="margin-bottom:12px;">se connecter</button>
+    <div style="margin-top:8px;">
       <span class="link" id="authToggle">pas encore de compte ? s'inscrire</span>
     </div>
   </div>
@@ -465,7 +468,11 @@ function saveTheme() {
 
 function applyTheme() {
   document.body.classList.toggle('light', theme === 'light');
-  document.getElementById('themeToggle').textContent = theme === 'dark' ? 'blanc' : 'noir';
+  const txt = theme === 'dark' ? 'blanc' : 'noir';
+  const t1 = document.getElementById('themeToggle');
+  const t2 = document.getElementById('authThemeToggle');
+  if (t1) t1.textContent = txt;
+  if (t2) t2.textContent = txt;
 }
 
 function renderHistory() {
@@ -630,11 +637,13 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') document.getElementById('ajouter').click();
 });
 
-document.getElementById('themeToggle').addEventListener('click', function() {
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+document.getElementById('authThemeToggle').addEventListener('click', toggleTheme);
+function toggleTheme() {
   theme = theme === 'dark' ? 'light' : 'dark';
   applyTheme();
   saveTheme();
-});
+}
 
 document.getElementById('pdfBtn').addEventListener('click', function() {
   if (sales.length === 0) return;
@@ -756,11 +765,17 @@ document.getElementById('authToggle').addEventListener('click', function() {
 });
 
 document.getElementById('authBtn').addEventListener('click', async function() {
-  if (!supabase) return;
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const errorEl = document.getElementById('authError');
   errorEl.style.display = 'none';
+  errorEl.style.color = '#f87171';
+
+  if (!supabase) {
+    errorEl.textContent = 'Supabase non disponible, vérifie ta connexion internet';
+    errorEl.style.display = '';
+    return;
+  }
 
   if (!email || !password) {
     errorEl.textContent = 'remplis tous les champs';
@@ -768,18 +783,27 @@ document.getElementById('authBtn').addEventListener('click', async function() {
     return;
   }
 
+  const btn = this;
+  const orig = btn.textContent;
+  btn.textContent = '...';
+  btn.disabled = true;
+
   if (isSignUp) {
     const { error } = await supabase.auth.signUp({ email, password });
+    btn.textContent = orig;
+    btn.disabled = false;
     if (error) {
       errorEl.textContent = error.message;
       errorEl.style.display = '';
     } else {
-      errorEl.textContent = 'compte créé ! vérifie tes emails pour confirmer';
+      errorEl.textContent = 'compte créé ! vérifie tes emails';
       errorEl.style.color = '#4ade80';
       errorEl.style.display = '';
     }
   } else {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    btn.textContent = orig;
+    btn.disabled = false;
     if (error) {
       errorEl.textContent = error.message;
       errorEl.style.display = '';
