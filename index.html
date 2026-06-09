@@ -46,15 +46,23 @@ body {
 }
 .container { width: 100%; max-width: 520px; }
 
+#authView {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .auth {
   text-align: center;
-  margin-top: 60px;
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
 }
 .auth h2 {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: 1px;
-  margin-bottom: 24px;
+  letter-spacing: 2px;
+  margin-bottom: 32px;
 }
 .auth input {
   width: 100%;
@@ -299,10 +307,9 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
   </div>
 </div>
 
-<div id="userBar" class="user-bar">
+<div id="userBar" class="user-bar" style="display:none;">
   <span class="email" id="userEmail"></span>
-  <span class="link" id="loginBtn">se connecter</span>
-  <span class="link link-logout" id="logoutBtn" style="display:none;">déconnexion</span>
+  <span class="link link-logout" id="logoutBtn">déconnexion</span>
 </div>
 
 <div class="form">
@@ -343,9 +350,6 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 
 <div id="authView" style="display:none;width:100%;max-width:400px;">
   <div class="auth">
-    <div style="text-align:left;margin-bottom:8px;">
-      <span class="link" id="authBack" style="font-size:13px;">← retour</span>
-    </div>
     <h2 id="authTitle">connexion</h2>
     <div id="authError" class="error" style="display:none;"></div>
     <input type="email" id="authEmail" placeholder="email" autocomplete="email">
@@ -776,15 +780,7 @@ document.getElementById('authBtn').addEventListener('click', async function() {
   }
 });
 
-document.getElementById('loginBtn').addEventListener('click', function() {
-  document.getElementById('mainView').style.display = 'none';
-  document.getElementById('historyView').style.display = 'none';
-  document.getElementById('authView').style.display = '';
-});
 
-document.getElementById('authBack').addEventListener('click', function() {
-  showMain();
-});
 
 document.getElementById('logoutBtn').addEventListener('click', async function() {
   await supabase.auth.signOut();
@@ -794,18 +790,14 @@ async function initUser(user) {
   currentUser = user;
   if (user) {
     document.getElementById('userEmail').textContent = user.email;
-    document.getElementById('userEmail').style.display = '';
-    document.getElementById('loginBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = '';
+    document.getElementById('userBar').style.display = '';
     await loadCloudData();
     showMain();
   } else {
-    document.getElementById('userEmail').style.display = 'none';
-    document.getElementById('loginBtn').style.display = '';
-    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('userBar').style.display = 'none';
     currentUser = null;
     loadLocal();
-    showMain();
+    showAuth();
   }
   applyTheme();
   render();
