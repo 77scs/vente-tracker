@@ -298,7 +298,7 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 <body>
 
 <div id="app">
-<div class="container" id="mainView">
+<div class="container" id="mainView" style="display:none;">
 
 <div style="text-align:center;margin-bottom:24px;">
   <div style="font-size:36px;font-weight:700;letter-spacing:3px;margin-bottom:4px;transition:color .2s;">analyser les ventes</div>
@@ -348,7 +348,7 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 
 </div>
 
-<div id="authView" style="display:none;width:100%;max-width:400px;">
+<div id="authView" style="width:100%;max-width:400px;">
   <div class="auth">
     <h2 id="authTitle">connexion</h2>
     <div id="authError" class="error" style="display:none;"></div>
@@ -374,8 +374,13 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 <script>
 const SUPABASE_URL = 'https://mbimktqlsqhxmzbbbhkc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_PpJOgXn3RoX6ZZJJbeyimg_E9QVpZg9';
-const { createClient } = window.supabase;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+let supabase = null;
+try {
+  const { createClient } = window.supabase;
+  supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch(e) {
+  console.warn('Supabase non disponible, mode local uniquement');
+}
 
 const STORAGE_KEY = 'vt_sales';
 const THEME_KEY = 'vt_theme';
@@ -398,6 +403,7 @@ function showMain() {
 }
 
 async function loadCloudData() {
+  if (!supabase) return;
   try {
     const { data: sData } = await supabase.from('sales').select('*').order('created_at');
     if (sData) {
@@ -750,6 +756,7 @@ document.getElementById('authToggle').addEventListener('click', function() {
 });
 
 document.getElementById('authBtn').addEventListener('click', async function() {
+  if (!supabase) return;
   const email = document.getElementById('authEmail').value.trim();
   const password = document.getElementById('authPassword').value;
   const errorEl = document.getElementById('authError');
@@ -780,10 +787,8 @@ document.getElementById('authBtn').addEventListener('click', async function() {
   }
 });
 
-
-
 document.getElementById('logoutBtn').addEventListener('click', async function() {
-  await supabase.auth.signOut();
+  if (supabase) await supabase.auth.signOut();
 });
 
 async function initUser(user) {
@@ -804,25 +809,23 @@ async function initUser(user) {
 }
 
 async function init() {
-  showMain();
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      await initUser(session.user);
-    } else {
-      await initUser(null);
-    }
-  } catch(e) {
-    await initUser(null);
+  if (supabase) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await initUser(session.user);
+        return;
+      }
+    } catch(e) {}
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        initUser(session.user);
+      } else {
+        initUser(null);
+      }
+    });
   }
-
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-      initUser(session.user);
-    } else {
-      initUser(null);
-    }
-  });
+  initUser(null);
 }
 
 init();
