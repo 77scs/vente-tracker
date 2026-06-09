@@ -343,6 +343,9 @@ td:nth-child(5), th:nth-child(5) { text-align: right; }
 
 <div id="authView" style="display:none;width:100%;max-width:400px;">
   <div class="auth">
+    <div style="text-align:left;margin-bottom:8px;">
+      <span class="link" id="authBack" style="font-size:13px;">← retour</span>
+    </div>
     <h2 id="authTitle">connexion</h2>
     <div id="authError" class="error" style="display:none;"></div>
     <input type="email" id="authEmail" placeholder="email" autocomplete="email">
@@ -777,6 +780,10 @@ document.getElementById('loginBtn').addEventListener('click', function() {
   document.getElementById('mainView').style.display = 'none';
   document.getElementById('historyView').style.display = 'none';
   document.getElementById('authView').style.display = '';
+});
+
+document.getElementById('authBack').addEventListener('click', function() {
+  showMain();
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async function() {
